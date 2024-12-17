@@ -1,0 +1,29 @@
+---
+name: Scheduled Buy
+
+on:
+  schedule:
+    - cron: '30 15 * * 1-5'
+
+env:
+  ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
+  ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+
+
+jobs:
+  run-buy-script: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # TODO: Update this for GO
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13' 
+
+      - name: Run Buy Script
+        run: |
+          pip install -r requirements.txt
+          python buy_script.py

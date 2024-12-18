@@ -166,9 +166,11 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 
 	bars := data["bars"].([]interface{})
 
+	bar := bars[0].(interface{})
+
 	fmt.Print(bars)
 
-	return bars["o"].(float64)
+	return bar["o"].(float64)
 }
 
 // func buyOrder(symbol string, client *alpaca.Client) {

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
-	"encoding/json"
-	"math"
 	// "github.com/alpacahq/alpaca-trade-api-go/alpaca"
 )
 type SymbolChange struct {
@@ -15,30 +15,32 @@ type SymbolChange struct {
 }
 
 type Item struct {
-    ID                   string   `json:"id"`
-    Class                string   `json:"class"`
-    Exchange             string   `json:"exchange"`
-    Symbol               string   `json:"symbol"`
-    Name                 string   `json:"name"`
-    Status               string   `json:"status"`
-    Tradable             bool     `json:"tradable"`
-    Marginable           bool     `json:"marginable"`
-    Shortable            bool     `json:"shortable"`
-    EasyToBorrow         bool     `json:"easy_to_borrow"`
-    Fractionable         bool     `json:"fractionable"`
-    MarginRequirementLong string   `json:"margin_requirement_long"`
-    MarginRequirementShort string   `json:"margin_requirement_short"`
-    Attributes           []string `json:"attributes"`
+	ID                   string   `json:"id"`
+	Class                string   `json:"class"`
+	Exchange             string   `json:"exchange"`
+	Symbol               string   `json:"symbol"`
+	Name                 string   `json:"name"`
+	Status               string   `json:"status"`
+	Tradable             bool     `json:"tradable"`
+	Marginable           bool     `json:"marginable"`
+	Shortable            bool     `json:"shortable"`
+	EasyToBorrow         bool     `json:"easy_to_borrow"`
+	Fractionable         bool     `json:"fractionable"`
+	MarginRequirementLong string   `json:"margin_requirement_long"`
+	MarginRequirementShort string   `json:"margin_requirement_short"`
+	Attributes           []string `json:"attributes"`
 }
 
 func main () {
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
-
-	params := "?status=active&asset_class=us_equity&exchange=NASDAQ"
+	params := "?status=active&exchange=NASDAQ"
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
+
+	fmt.Print(res)
+	fmt.Print("\n")
 
 	var data []Item
 	err := json.Unmarshal(res, &data)
@@ -49,7 +51,7 @@ func main () {
 
 	first, second := findBiggestLosers(data, alpacaKey, alpacaSecret)
 
-	fmt.Printf("%f , %f", first, second)
+	fmt.Printf("%f , %f", first.Change, second.Change)
 	
 }
 
@@ -65,41 +67,11 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
+	fmt.Print(body)
+	fmt.Print("\n")
+
 	return body
 }
-
-// func main() {
-// 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
-// 	alpaceSecret, _ := os.LookupEnv("ALPACA_SECRET")
-// 	fmt.Printf("%s", alpacaKey)
-// 	baseUrl := "https://paper-api.alpaca.markets"
-
-// 	alpaca.SetBaseUrl(baseUrl)
-// 	creds := common.APIKey{
-// 		ID: alpacaKey,
-// 		Secret: alpaceSecret,
-// 	}
-
-// 	client := alpaca.NewClient(&creds)
-
-// 	status := "active"
-// 	assets, err := client.ListAssets(&status)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-	
-// 	nasdaq_assets := []alpaca.Asset{}
-// 	for _, asset := range assets {
-// 		if asset.Exchange == "NASDAQ" {
-// 			nasdaq_assets = append(nasdaq_assets, asset)
-// 		}
-// 	}
-
-// 	first, second := findBiggestLosers(client, nasdaq_assets)
-
-// 	buyOrder(first.Symbol, client)
-// 	buyOrder(second.Symbol, client)
-// }
 
 func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
 	losers := []SymbolChange{}
@@ -168,9 +140,9 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 
 	fmt.Print(bars)
 
-	bar := bars["o"].(float64)
+	bar := bars[0].(map[string]interface{})
 
-	return bar
+	return bar["o"].(float64)
 }
 
 // func buyOrder(symbol string, client *alpaca.Client) {

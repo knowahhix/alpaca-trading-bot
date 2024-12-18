@@ -46,7 +46,7 @@ func main () {
 	  panic(err)
 	}
 
-	first, second := findBiggestLosers(data)
+	first, second := findBiggestLosers(data, &alpacaKey, &alpacaSecret)
 	
 }
 
@@ -98,11 +98,12 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 // 	buyOrder(second.Symbol, client)
 // }
 
-func findBiggestLosers(assets []Item) (SymbolChange, SymbolChange){
+func findBiggestLosers(assets []Item, alpacaKey &string, alpacaSecret &string) (SymbolChange, SymbolChange){
 	losers := []SymbolChange{}
 	for _, asset := range assets {
+		current := getCurrentPrice(asset.Symbol, alpacaKey, alpacaSecret)
+		fmt.Print(current)
 		open := getStartPrice(asset.Symbol)
-		current := getCurrentPrice(asset.Symbol)
 		percentChange := (current / open) * 100
 		data := SymbolChange{
 			Symbol: asset.Symbol,
@@ -129,14 +130,21 @@ func findBiggestLosers(assets []Item) (SymbolChange, SymbolChange){
 
 }
 
-func getCurrentPrice(symbol string) float32 {
-	resp, err := client.GetLastQuote(symbol)
+func getCurrentPrice(symbol string, alpacaKey &string, alpacaSecret &string) float32 {
+	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
+	params := "?feed=sip"
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params)
+
+	var data map[string]interface{}
+	err := json.Unmarshal(res, &data)
 
 	if err != nil {
-		panic(err)
+	  panic(err)
 	}
 
-	return resp.Last.AskPrice
+	quote := data["quote"].(map[string]interface{})
+
+	return quote["ap"].(float32)
 }
 
 // func getStartPrice(symbol string, client *alpaca.Client) float32 {

@@ -25,7 +25,7 @@ func main () {
 	fmt.Println(res[0])
 }
 
-func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []interface{} {
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) any {
 	req, _ := http.NewRequest(method, url + params, nil)
 
 	req.Header.Add("accept", "application/json")
@@ -37,8 +37,10 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	var data []interface{}
+	var data any
 	err := json.Unmarshal(body, &data)
+
+	fmt.Printf("Type of a: %T\n", data)
 
 	if err != nil {
 	  panic(err)
@@ -46,7 +48,7 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	
 	fmt.Print(data)
 
-	return data.([]interface{})
+	return data
 }
 
 // func main() {

@@ -11,7 +11,7 @@ import (
 )
 type SymbolChange struct {
 	Symbol string
-	Change float32
+	Change float64
 }
 
 type Item struct {

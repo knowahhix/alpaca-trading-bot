@@ -19,7 +19,13 @@ func main () {
 
 	params := "?status=active&asset_class=us_equity&exchange=NASDAQ"
 
-	req, _ := http.NewRequest("GET", assetsUrl + params, nil)
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
+
+	fmt.Println(string(res))
+}
+
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []byte {
+	req, _ := http.NewRequest(method, url + params, nil)
 
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("APCA-API-KEY-ID", alpacaKey)
@@ -30,12 +36,8 @@ func main () {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	fmt.Println(string(body))
+	return body
 }
-
-// func alpacaRes(method string, auth string, url string, param string) {
-
-// }
 
 // func main() {
 // 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")

@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"strings"
 	// "github.com/alpacahq/alpaca-trade-api-go/alpaca"
 )
 type SymbolChange struct {
@@ -37,7 +38,7 @@ func main () {
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
 	params := "?status=active&exchange=NASDAQ"
 
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params, nil)
 
 	var items []Item 
 	err := json.Unmarshal(res, &items)
@@ -46,16 +47,24 @@ func main () {
 		panic(err)
 	}
 
-	fmt.Print(items[0])
-
 	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
 
 	fmt.Printf("%F, %F", first.Change, second.Change)
+
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret)
+	buyOrder(second.Symbol, alpacaKey, alpacaSecret)
 	 
 }
 
-func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []byte {
-	req, _ := http.NewRequest(method, url + params, nil)
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string, body any) []byte {
+	var req *http.Request
+	if body == nil {
+		req, _ = http.NewRequest(method, url + params, nil)
+	} else {
+		payload := body.(io.Reader)
+		req, _ = http.NewRequest(method, url + params, payload)
+	}
+	
 
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("APCA-API-KEY-ID", alpacaKey)
@@ -64,9 +73,9 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	res, _ := http.DefaultClient.Do(req)
 
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
+	data, _ := io.ReadAll(res.Body)
 
-	return body
+	return data
 }
 
 func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
@@ -86,7 +95,7 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 	}
 	
 	var first, second SymbolChange
-	first.Change = math.MaxFloat32
+	first.Change = math.MaxFloat64
 
 	for _, sc := range losers {
 		if sc.Change < first.Change {
@@ -106,7 +115,7 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
 	params := "?feed=iex"
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params)
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
 
 	var data map[string]interface{}
 	err := json.Unmarshal(res, &data)
@@ -128,7 +137,7 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
 	params := "?timeframe=1D&feed=iex"
 
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params)
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
 	
 	var data map[string]interface{}
 	err := json.Unmarshal(res, &data)
@@ -146,21 +155,24 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 	return bar
 }
 
-// func buyOrder(symbol string, client *alpaca.Client) {
-// 	accountID, err := client.GetAccount()
-// 	if err != nil {
-// 		panic(err)
-// 	}
+func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
+	accountURL := "https://paper-api.alpaca.markets/v2/account"
+	params := ""
 
-// 	amt := accountID.BuyingPower.Div(decimal.NewFromInt(2))
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, accountURL, params, nil)
 
-// 	order := alpaca.PlaceOrderRequest{
-// 		AccountID: accountID.ID,
-// 		AssetKey: &symbol,
-// 		Notional: amt,
-// 		Side: "buy",
-// 		Type: "market",
-// 		TimeInForce: "day",
-// 	}
-// 	client.PlaceOrder(order)
-// }
+	var account map[string]interface{}
+	err := json.Unmarshal(res, &account)
+
+	if err != nil {
+		panic(err)
+	}
+
+	buying_power := account["buying_power"].(float32)
+
+
+	url := "https://paper-api.alpaca.markets/v2/orders"
+	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))
+
+	alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)
+}

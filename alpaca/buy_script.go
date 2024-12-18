@@ -39,20 +39,19 @@ func main () {
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
 
-	fmt.Print(res)
-	fmt.Print("\n")
-
-	var data []Item
-	err := json.Unmarshal(res, &data)
+	var items []Item 
+	err := json.Unmarshal(res, &items)
 
 	if err != nil {
-	  panic(err)
+		panic(err)
 	}
 
-	first, second := findBiggestLosers(data, alpacaKey, alpacaSecret)
+	fmt.Print(items[0])
 
-	fmt.Printf("%f , %f", first.Change, second.Change)
-	
+	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
+
+	fmt.Printf("%F, %F", first.Change, second.Change)
+	 
 }
 
 func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []byte {
@@ -67,9 +66,6 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	fmt.Print(body)
-	fmt.Print("\n")
-
 	return body
 }
 
@@ -78,6 +74,9 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 	for _, asset := range assets {
 		current := getCurrentPrice(asset.Symbol, alpacaKey, alpacaSecret)
 		open := getStartPrice(asset.Symbol, alpacaKey, alpacaSecret)
+		if (open == 0  || current == 0 || current < 15) || (asset.Symbol == "BAND"){
+			continue
+		}
 		percentChange := (current / open) * 100
 		data := SymbolChange{
 			Symbol: asset.Symbol,
@@ -116,11 +115,13 @@ func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float
 	  panic(err)
 	}
 
-	fmt.Print(data)
+	if data["quote"] == nil {
+		return 0
+	}
 
-	quote := data["quote"].(map[string]interface{})
+	quote := data["quote"].(map[string]interface{})["ap"].(float64)
 
-	return quote["ap"].(float64)
+	return quote
 }
 
 func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
@@ -136,13 +137,13 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 	  panic(err)
 	}
 
-	bars := data["bars"].([]interface{})
+	if data["bars"] == nil {
+		return 0
+	}
 
-	fmt.Print(bars)
-
-	bar := bars[0].(map[string]interface{})
-
-	return bar["o"].(float64)
+	bar := data["bars"].([]interface{})[0].(map[string]interface{})["o"].(float64)
+	
+	return bar
 }
 
 // func buyOrder(symbol string, client *alpaca.Client) {

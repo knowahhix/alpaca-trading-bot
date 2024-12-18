@@ -46,7 +46,7 @@ func main () {
 	  panic(err)
 	}
 
-	fmt.Print(data[0].Symbol)
+	first, second := findBiggestLosers(data)
 	
 }
 
@@ -98,46 +98,46 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 // 	buyOrder(second.Symbol, client)
 // }
 
-// func findBiggestLosers(client *alpaca.Client, assets []alpaca.Asset) (SymbolChange, SymbolChange){
-// 	losers := []SymbolChange{}
-// 	for _, asset := range assets {
-// 		open := getStartPrice(asset.Symbol, client)
-// 		current := getCurrentPrice(asset.Symbol, client)
-// 		percentChange := (current / open) * 100
-// 		data := SymbolChange{
-// 			Symbol: asset.Symbol,
-// 			Change: percentChange,
-// 		}
-// 		losers = append(losers, data)
-// 	}
+func findBiggestLosers(assets []Item) (SymbolChange, SymbolChange){
+	losers := []SymbolChange{}
+	for _, asset := range assets {
+		open := getStartPrice(asset.Symbol)
+		current := getCurrentPrice(asset.Symbol)
+		percentChange := (current / open) * 100
+		data := SymbolChange{
+			Symbol: asset.Symbol,
+			Change: percentChange,
+		}
+		losers = append(losers, data)
+	}
 	
-// 	var first, second SymbolChange
-// 	first.Change = math.MaxFloat32
+	var first, second SymbolChange
+	first.Change = math.MaxFloat32
 
-// 	for _, sc := range losers {
-// 		if sc.Change < first.Change {
-// 			// Update first and second smallest values
-// 			second = first
-// 			first = sc
-// 		} else if sc.Change < second.Change {
-// 			// Update only the second smallest value
-// 			second = sc
-// 		}
-// 	}
+	for _, sc := range losers {
+		if sc.Change < first.Change {
+			// Update first and second smallest values
+			second = first
+			first = sc
+		} else if sc.Change < second.Change {
+			// Update only the second smallest value
+			second = sc
+		}
+	}
 
-// 	return first, second
+	return first, second
 
-// }
+}
 
-// func getCurrentPrice(symbol string, client *alpaca.Client) float32 {
-// 	resp, err := client.GetLastQuote(symbol)
+func getCurrentPrice(symbol string) float32 {
+	resp, err := client.GetLastQuote(symbol)
 
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	if err != nil {
+		panic(err)
+	}
 
-// 	return resp.Last.AskPrice
-// }
+	return resp.Last.AskPrice
+}
 
 // func getStartPrice(symbol string, client *alpaca.Client) float32 {
 // 	limit := 1

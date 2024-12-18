@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"encoding/json"
 	// "github.com/alpacahq/alpaca-trade-api-go/alpaca"
 )
 type SymbolChange struct {

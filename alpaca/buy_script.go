@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"os"
 
@@ -16,6 +17,7 @@ type SymbolChange struct {
 func main() {
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpaceSecret, _ := os.LookupEnv("ALPACA_SECRET")
+	fmt.Printf("%s", alpacaKey)
 	baseUrl := "https://paper-api.alpaca.markets"
 
 	alpaca.SetBaseUrl(baseUrl)

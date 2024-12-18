@@ -144,6 +144,8 @@ func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float
 	  panic(err)
 	}
 
+	fmt.Print(data)
+
 	quote := data["quote"].(map[string]interface{})
 
 	return quote["ap"].(float32)

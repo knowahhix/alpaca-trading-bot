@@ -26,6 +26,7 @@ jobs:
       - name: Build
         run: |
           go mod init alpaca
+          go mod tidy
           go build -o myapp
 
       - name: Run

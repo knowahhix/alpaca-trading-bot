@@ -134,7 +134,7 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 
 func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float32 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
-	params := "?feed=otc"
+	params := "?feed=iex"
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params)
 
 	var data map[string]interface{}
@@ -153,7 +153,7 @@ func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float
 
 func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float32 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
-	params := "?timeframe=1D&feed=otc"
+	params := "?timeframe=1D&feed=iex"
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params)
 	

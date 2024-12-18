@@ -13,6 +13,23 @@ type SymbolChange struct {
 	Change float32
 }
 
+type Item struct {
+    ID                   string   `json:"id"`
+    Class                string   `json:"class"`
+    Exchange             string   `json:"exchange"`
+    Symbol               string   `json:"symbol"`
+    Name                 string   `json:"name"`
+    Status               string   `json:"status"`
+    Tradable             bool     `json:"tradable"`
+    Marginable           bool     `json:"marginable"`
+    Shortable            bool     `json:"shortable"`
+    EasyToBorrow         bool     `json:"easy_to_borrow"`
+    Fractionable         bool     `json:"fractionable"`
+    MarginRequirementLong string   `json:"margin_requirement_long"`
+    MarginRequirementShort string   `json:"margin_requirement_short"`
+    Attributes           []string `json:"attributes"`
+}
+
 func main () {
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
@@ -22,10 +39,10 @@ func main () {
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
 
-	fmt.Println(res)
+	fmt.Println(res[0])
 }
 
-func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []map[string] {
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []Item {
 	req, _ := http.NewRequest(method, url + params, nil)
 
 	req.Header.Add("accept", "application/json")
@@ -37,7 +54,7 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	var data []map[string]
+	var data []Item
 	err := json.Unmarshal(body, &data)
 
 	if err != nil {

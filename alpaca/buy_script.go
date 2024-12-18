@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,21 +13,17 @@ type SymbolChange struct {
 }
 
 func main () {
-	username, _ := os.LookupEnv("ALPACA_USERNAME")
-	password, _ := os.LookupEnv("ALPACA_PASSWORD")
+	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
+	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
-
-	formattedString := fmt.Sprintf("%s:%s", username, password)
-	
-	auth := base64.StdEncoding.EncodeToString([]byte(formattedString))
-	fmt.Printf("%s", auth)
 
 	params := "?status=active&asset_class=us_equity&exchange=NASDAQ"
 
 	req, _ := http.NewRequest("GET", assetsUrl + params, nil)
 
 	req.Header.Add("accept", "application/json")
-	req.Header.Add("authorization", fmt.Sprintf("Basic %s", auth))
+	req.Header.Add("APCA-API-KEY-ID", alpacaKey)
+	req.Header.Add("APCA-API-SECRET-KEY", alpacaSecret)
 
 	res, _ := http.DefaultClient.Do(req)
 
@@ -37,6 +32,10 @@ func main () {
 
 	fmt.Println(string(body))
 }
+
+// func alpacaRes(method string, auth string, url string, param string) {
+
+// }
 
 // func main() {
 // 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")

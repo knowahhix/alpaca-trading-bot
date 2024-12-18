@@ -21,10 +21,10 @@ func main () {
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
 
-	fmt.Println(string(res))
+	fmt.Println(res[0])
 }
 
-func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []byte {
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []interface{} {
 	req, _ := http.NewRequest(method, url + params, nil)
 
 	req.Header.Add("accept", "application/json")
@@ -36,7 +36,14 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	return body
+	var data []interface{}
+	err := json.Unmarshal(body, &data)
+
+	if err != nil {
+	  panic(err)
+	}
+
+	return data.([]interface{})
 }
 
 // func main() {

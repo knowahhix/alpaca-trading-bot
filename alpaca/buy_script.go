@@ -22,10 +22,10 @@ func main () {
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
 
-	fmt.Println(res[0])
+	fmt.Println(res.([]map[string])[0])
 }
 
-func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) any {
+func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []map[string] {
 	req, _ := http.NewRequest(method, url + params, nil)
 
 	req.Header.Add("accept", "application/json")
@@ -37,15 +37,13 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	var data any
-	err := json.Unmarshal(body, &data)
-
-	fmt.Printf("Type of a: %T\n", data)
+	var data []map[string]
+	err = json.Unmarshal(body, &data)
 
 	if err != nil {
-	  panic(err)
+		panic(err)
 	}
-	
+
 	fmt.Print(data)
 
 	return data

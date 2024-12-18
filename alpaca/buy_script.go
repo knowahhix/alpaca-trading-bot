@@ -49,7 +49,7 @@ func main () {
 
 	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
 
-	fmt.Printf("%F, %F", first.Change, second.Change)
+	fmt.Printf("%s:%F, %s:%F", first.Symbol, first.Change, first.Symbol ,second.Change)
 
 	buyOrder(first.Symbol, alpacaKey, alpacaSecret)
 	buyOrder(second.Symbol, alpacaKey, alpacaSecret)
@@ -64,7 +64,6 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 		payload := body.(io.Reader)
 		req, _ = http.NewRequest(method, url + params, payload)
 	}
-	
 
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("APCA-API-KEY-ID", alpacaKey)
@@ -169,7 +168,6 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
 	}
 
 	buying_power := account["buying_power"].(float32)
-
 
 	url := "https://paper-api.alpaca.markets/v2/orders"
 	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))

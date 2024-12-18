@@ -164,7 +164,7 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 	  panic(err)
 	}
 
-	bars := data["bars"].([]map[string]interface{})
+	bars := data["bars"].([]interface{})
 
 	fmt.Print(bars)
 

@@ -16,8 +16,8 @@ type SymbolChange struct {
 func main () {
 	username, _ := os.LookupEnv("ALPACA_USERNAME")
 	password, _ := os.LookupEnv("ALPACA_PASSWORD")
-	assetsUrl := "https://broker-api.sandbox.alpaca.markets/v1/assets"
-	
+	assetsUrl := "https://api.alpaca.markets/v2/assets"
+
 	formattedString := fmt.Sprintf("%s:%s", username, password)
 	auth := base64.StdEncoding.EncodeToString([]byte(formattedString))
 

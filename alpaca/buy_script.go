@@ -149,7 +149,7 @@ func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float
 	return quote["ap"].(float32)
 }
 
-func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) any {
+func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float32 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
 	params := "?timeframe=1D"
 
@@ -166,7 +166,7 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) any {
 
 	fmt.Print(bars)
 
-	return bars
+	return bars[0]["o"].(float32)
 }
 
 // func buyOrder(symbol string, client *alpaca.Client) {

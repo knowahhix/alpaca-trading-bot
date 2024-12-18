@@ -22,7 +22,7 @@ func main () {
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params)
 
-	fmt.Println(res.([]map[string])[0])
+	fmt.Println(res)
 }
 
 func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string) []map[string] {
@@ -38,10 +38,10 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	body, _ := io.ReadAll(res.Body)
 
 	var data []map[string]
-	err = json.Unmarshal(body, &data)
+	err := json.Unmarshal(body, &data)
 
 	if err != nil {
-		panic(err)
+	  panic(err)
 	}
 
 	fmt.Print(data)

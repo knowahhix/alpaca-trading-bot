@@ -9,6 +9,8 @@ on:
 env:
   ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
   ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+  ALPACA_USERNAME: ${{ secrets.ALPACA_USERNAME }}
+  ALPACA_PASSWORD: ${{ secrets.ALPACA_PASSWORD }}
 
 
 jobs:

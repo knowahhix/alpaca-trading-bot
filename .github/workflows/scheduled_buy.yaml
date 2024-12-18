@@ -31,7 +31,6 @@ jobs:
       - name: Build
         working-directory: ./alpaca
         run: |
-          go mod init alpaca
           go mod tidy
           go build -o myapp
 

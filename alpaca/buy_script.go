@@ -19,6 +19,7 @@ func main () {
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
 
 	formattedString := fmt.Sprintf("%s:%s", username, password)
+	fmt.Printf("%s", formattedString)
 	auth := base64.StdEncoding.EncodeToString([]byte(formattedString))
 
 	params := "?status=active&asset_class=us_equity&exchange=NASDAQ"

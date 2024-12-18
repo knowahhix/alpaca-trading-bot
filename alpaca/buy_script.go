@@ -16,7 +16,7 @@ type SymbolChange struct {
 func main() {
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpaceSecret, _ := os.LookupEnv("ALPACA_SECRET")
-	baseUrl := "https://api.alpaca.markets"
+	baseUrl := "https://paper-api.alpaca.markets"
 
 	alpaca.SetBaseUrl(baseUrl)
 	creds := common.APIKey{

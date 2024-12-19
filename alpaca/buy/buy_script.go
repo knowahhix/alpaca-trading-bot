@@ -70,7 +70,7 @@ func main () {
 	}
 	var itemList []string 
 	for _, item := range items {
-		if strings.Contains(item.Symbol, "/"){
+		if strings.Contains(item.Symbol, "/") || !item.Fractionable {
 			continue
 		}
 		itemList = append(itemList, item.Symbol)

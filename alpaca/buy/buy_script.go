@@ -117,8 +117,10 @@ func main () {
 
 	buyingPower := findBuyingPower(alpacaKey, alpacaSecret, isDryRun)
 
-	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, float32(buyingPower))
-	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun, float32(buyingPower))
+	fmt.Printf("\nBuying Power: %f", buyingPower)
+
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
+	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
 	 
 }
 
@@ -143,7 +145,7 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	return data
 }
 
-func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool, buyingPower float32) {
+func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool, buyingPower float64) {
 	var apiDomain string
 	if !dryRun {
 		apiDomain = "api"

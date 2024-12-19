@@ -182,6 +182,8 @@ func catastrophe(symbol string, alpacaKey string, alpacaSecret string) bool{
 	  panic(err)
 	}
 
+	fmt.Print(data)
+
 	if data["bars"] == nil {
 		return true
 	}

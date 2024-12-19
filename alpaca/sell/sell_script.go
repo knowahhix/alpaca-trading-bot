@@ -13,16 +13,19 @@ func main() {
 	isDryRun, _ := strconv.ParseBool(dryRun)
 
 	var apiDomain string
+	var alpacaKey, alpacaSecret string
 	if !isDryRun {
 		apiDomain = "api"
+		alpacaKey, _ = os.LookupEnv("ALPACA_KEY")
+		alpacaSecret, _ = os.LookupEnv("ALPACA_SECRET")
 	} else {
 		apiDomain = "paper-api"
+		alpacaKey, _ = os.LookupEnv("PAPER_ALPACA_KEY")
+		alpacaSecret, _ = os.LookupEnv("PAPER_ALPACA_SECRET")
 	}
 
-	fmt.Printf("Routing requests to %s", apiDomain)
+	fmt.Printf("Routing requests to %s\n", apiDomain)
 
-	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
-	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	url := fmt.Sprintf("https://%s.alpaca.markets/v2/positions", apiDomain)
 
 	req, _ := http.NewRequest("DELETE", url, nil)

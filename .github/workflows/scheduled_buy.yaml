@@ -9,8 +9,8 @@ on:
 env:
   ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
   ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
-  ALPACA_USERNAME: ${{ secrets.ALPACA_USERNAME }}
-  ALPACA_PASSWORD: ${{ secrets.ALPACA_PASSWORD }}
+  PAPER_ALPACA_KEY: ${{ secrets.PAPER_ALPACA_KEY }}
+  PAPER_ALPACA_SECRET: ${{ secrets.PAPER_ALPACA_SECRET }}
   DRY_RUN: "${{ github.event_name == 'schedule' && 'false' || 'true' }}"
 
 

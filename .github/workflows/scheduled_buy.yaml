@@ -1,0 +1,42 @@
+---
+name: Scheduled Buy
+
+on:
+  schedule:
+    - cron: '30 15 * * 1-5'
+  pull_request:
+
+env:
+  ALPACA_KEY: ${{ secrets.ALPACA_KEY }}
+  ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+  PAPER_ALPACA_KEY: ${{ secrets.PAPER_ALPACA_KEY }}
+  PAPER_ALPACA_SECRET: ${{ secrets.PAPER_ALPACA_SECRET }}
+  DRY_RUN: "${{ github.event_name == 'schedule' && 'false' || 'true' }}"
+
+
+jobs:
+  run-buy-script: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install dependencies
+        working-directory: ./alpaca/buy
+        run: |
+          go get .
+
+      - name: Build
+        working-directory: ./alpaca/buy
+        run: |
+          go mod tidy
+          go build -o buy
+
+      - name: Run
+        working-directory: ./alpaca/buy
+        run: ./buy

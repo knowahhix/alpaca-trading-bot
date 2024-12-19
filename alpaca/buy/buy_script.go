@@ -54,7 +54,7 @@ func main () {
 
 	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
 
-	fmt.Printf("%s:%F, %s:%F", first.Symbol, first.Change, second.Symbol ,second.Change)
+	fmt.Printf("Biggest Losers: \n%s:%F, %s:%F\n\n", first.Symbol, first.Change, second.Symbol ,second.Change)
 
 	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun)
 	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun)
@@ -167,12 +167,12 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 		panic(err)
 	}
 
-	fmt.Print(account)
-
 	buying_power, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
 
 	url := fmt.Sprintf("https://%s.alpaca.markets/v2/orders", apiDomain)
 	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))
 
-	alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)
+	orderStatus := alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)
+
+	fmt.Printf("\n\n\nOrder Info: \n%s", string(orderStatus))
 }

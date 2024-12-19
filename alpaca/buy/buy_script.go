@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	// "github.com/alpacahq/alpaca-trade-api-go/alpaca"
 )
 type SymbolChange struct {
 	Symbol string

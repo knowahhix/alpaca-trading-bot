@@ -56,8 +56,10 @@ func main () {
 
 	fmt.Printf("Biggest Losers: \n%s:%F, %s:%F\n\n", first.Symbol, first.Change, second.Symbol ,second.Change)
 
-	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun)
-	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun)
+	buyingPower := findBuyingPower(alpacaKey, alpacaSecret, isDryRun)
+
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, float32(buyingPower))
+	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun, float32(buyingPower))
 	 
 }
 
@@ -116,6 +118,11 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 }
 
 func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) float64 {
+	//First check if the company is catastriphic
+	if catastrophe(symbol, alpacaKey, alpacaSecret) {
+		return 0
+	}
+
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
 	params := "?timeframe=1D&feed=iex"
 
@@ -143,7 +150,7 @@ func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) floa
 	return ((close - open) / open ) * 100
 }
 
-func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool) {
+func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool, buyingPower float32) {
 	var apiDomain string
 	if !dryRun {
 		apiDomain = "api"
@@ -153,26 +160,63 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 		alpacaSecret, _ = os.LookupEnv("PAPER_ALPACA_SECRET")
 	}
 
-	fmt.Printf("Routing requests to %s\n", apiDomain)
-
-	accountURL := fmt.Sprintf("https://%s.alpaca.markets/v2/account", apiDomain)
-	params := ""
-
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, accountURL, params, nil)
-
-	var account map[string]interface{}
-	err := json.Unmarshal(res, &account)
-
-	if err != nil {
-		panic(err)
-	}
-
-	buying_power, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
+	fmt.Printf("\n\nRouting requests to %s\n", apiDomain)
 
 	url := fmt.Sprintf("https://%s.alpaca.markets/v2/orders", apiDomain)
-	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))
+	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buyingPower))
 
-	orderStatus := alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)
+	orderStatus := alpacaRequest("POST", alpacaKey, alpacaSecret, url, "", payload)
 
 	fmt.Printf("\n\n\nOrder Info: \n%s", string(orderStatus))
+}
+
+func catastrophe(symbol string, alpacaKey string, alpacaSecret string) bool{
+	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
+	params := "?timeframe=3M&feed=iex"
+	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
+	
+	var data map[string]interface{}
+	err := json.Unmarshal(res, &data)
+
+	if err != nil {
+	  panic(err)
+	}
+
+	if data["bars"] == nil {
+		return true
+	}
+
+	bar := data["bars"].([]interface{})[0].(map[string]interface{})
+	open := bar["o"].(float64)
+	close := bar["c"].(float64)
+
+	// If the company has lost 50% of its value in the last 3 months it is catastrophic
+	return (((close - open) / open ) * 100) < -50
+}
+
+func findBuyingPower(alpacaKey string, alpacaSecret string, isDryRun bool) float64 {
+	var apiDomain string
+	if !isDryRun {
+		apiDomain = "api"
+	} else {
+		apiDomain = "paper-api"
+		alpacaKey, _ = os.LookupEnv("PAPER_ALPACA_KEY")
+		alpacaSecret, _ = os.LookupEnv("PAPER_ALPACA_SECRET")
+	}
+
+	accountURL := fmt.Sprintf("https://%s.alpaca.markets/v2/account", apiDomain)
+	accountParams := ""
+
+	accountRes := alpacaRequest("GET", alpacaKey, alpacaSecret, accountURL, accountParams, nil)
+
+	var account map[string]interface{}
+	e := json.Unmarshal(accountRes, &account)
+
+	if e != nil {
+		panic(e)
+	}
+
+	totalBuyingPower, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
+
+	return math.Floor( (totalBuyingPower/2) * 100 ) / 100 
 }

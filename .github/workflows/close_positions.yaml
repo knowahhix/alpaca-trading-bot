@@ -1,9 +1,9 @@
 ---
-name: Scheduled Buy
+name: Close Positions
 
 on:
   schedule:
-    - cron: '30 15 * * 1-5'
+    - cron: '15 10 * * 1-5'
   pull_request:
 
 env:
@@ -11,7 +11,6 @@ env:
   ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
   ALPACA_USERNAME: ${{ secrets.ALPACA_USERNAME }}
   ALPACA_PASSWORD: ${{ secrets.ALPACA_PASSWORD }}
-
 
 jobs:
   run-buy-script: 
@@ -26,16 +25,16 @@ jobs:
           go-version: '1.23'
 
       - name: Install dependencies
-        working-directory: ./alpaca/buy
+        working-directory: ./alpaca/sell
         run: |
           go get .
 
       - name: Build
-        working-directory: ./alpaca/buy
+        working-directory: ./alpaca/sell
         run: |
           go mod tidy
-          go build -o buy
+          go build -o sell
 
       - name: Run
-        working-directory: ./alpaca/buy
-        run: ./buy
+        working-directory: ./alpaca/sell
+        run: ./sell

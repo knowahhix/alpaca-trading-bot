@@ -110,27 +110,6 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 	return first, second
 }
 
-// func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
-// 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
-// 	params := "?feed=iex"
-// 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
-
-// 	var data map[string]interface{}
-// 	err := json.Unmarshal(res, &data)
-
-// 	if err != nil {
-// 	  panic(err)
-// 	}
-
-// 	if data["quote"] == nil {
-// 		return 0
-// 	}
-
-// 	quote := data["quote"].(map[string]interface{})["ap"].(float64)
-
-// 	return quote
-// }
-
 func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) float64 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
 	params := "?timeframe=1D&feed=iex"
@@ -148,8 +127,13 @@ func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) floa
 		return 0
 	}
 
-	open := data["bars"].([]interface{})[0].(map[string]interface{})["o"].(float64)
-	close := data["bars"].([]interface{})[0].(map[string]interface{})["c"].(float64)
+	bar := data["bars"].([]interface{})[0].(map[string]interface{})
+	open := bar["o"].(float64)
+	close := bar["c"].(float64)
+
+	if close < 5 {
+		return 0
+	}
 	
 	return ((close - open) / open ) * 100
 }

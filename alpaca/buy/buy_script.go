@@ -150,7 +150,7 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 	} else {
 		apiDomain = "paper-api"
 	}
-	
+
 	accountURL := fmt.Sprintf("https://%s.alpaca.markets/v2/account", apiDomain)
 	params := ""
 
@@ -162,6 +162,8 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Print(account)
 
 	buying_power := account["buying_power"].(float32)
 

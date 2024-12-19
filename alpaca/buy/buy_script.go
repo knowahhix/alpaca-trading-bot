@@ -38,15 +38,8 @@ func main () {
 	dryRun, _ := os.LookupEnv("DRY_RUN")
 	isDryRun, _ := strconv.ParseBool(dryRun)
 
-	var alpacaKey, alpacaSecret string
-	if !isDryRun {
-		alpacaKey, _ = os.LookupEnv("ALPACA_KEY")
-		alpacaSecret, _ = os.LookupEnv("ALPACA_SECRET")
-	} else {
-		alpacaKey, _ = os.LookupEnv("PAPER_ALPACA_KEY")
-		alpacaSecret, _ = os.LookupEnv("PAPER_ALPACA_SECRET")
-	}
-
+	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
+	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
 	params := "?status=active&exchange=NASDAQ"
 
@@ -156,6 +149,8 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 		apiDomain = "api"
 	} else {
 		apiDomain = "paper-api"
+		alpacaKey, _ = os.LookupEnv("PAPER_ALPACA_KEY")
+		alpacaSecret, _ = os.LookupEnv("PAPER_ALPACA_SECRET")
 	}
 
 	fmt.Printf("Routing requests to %s\n", apiDomain)

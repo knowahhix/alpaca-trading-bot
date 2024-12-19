@@ -151,6 +151,8 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 		apiDomain = "paper-api"
 	}
 
+	fmt.Printf("Routing requests to %s", apiDomain)
+
 	accountURL := fmt.Sprintf("https://%s.alpaca.markets/v2/account", apiDomain)
 	params := ""
 

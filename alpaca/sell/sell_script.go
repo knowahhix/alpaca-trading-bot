@@ -19,6 +19,8 @@ func main() {
 		apiDomain = "paper-api"
 	}
 
+	fmt.Printf("Routing requests to %s", apiDomain)
+
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	url := fmt.Sprintf("https://%s.alpaca.markets/v2/positions", apiDomain)

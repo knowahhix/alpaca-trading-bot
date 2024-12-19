@@ -12,10 +12,10 @@ env:
   ALPACA_USERNAME: ${{ secrets.ALPACA_USERNAME }}
   ALPACA_PASSWORD: ${{ secrets.ALPACA_PASSWORD }}
   DRY_RUN: "${{ github.event_name == 'schedule' && 'false' || 'true' }}"
-  
+
 
 jobs:
-  run-buy-script: 
+  run-sell-script: 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

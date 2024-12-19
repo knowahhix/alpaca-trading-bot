@@ -24,7 +24,7 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
   local_secondary_index {
     name               = "local"
     non_key_attributes = ["OpenPrice"]
-    projection_type    = "ALL"
+    projection_type    = "INCLUDE"
     range_key          = "LastUpdated"
   }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -33,6 +34,22 @@ type Item struct {
 	Attributes           []string `json:"attributes"`
 }
 
+type Bar struct {
+	T   string  `json:"t"`
+	O   float64 `json:"o"`
+	H   float64 `json:"h"`
+	L   float64 `json:"l"`
+	C   float64 `json:"c"`
+	V   int     `json:"v"`
+	N   int     `json:"n"`
+	VW  float64 `json:"vw"`
+}
+
+type Response struct {
+	Bars          map[string][]Bar `json:"bars"`
+	NextPageToken string           `json:"next_page_token"`
+}
+
 func main () {
 
 	dryRun, _ := os.LookupEnv("DRY_RUN")
@@ -42,6 +59,7 @@ func main () {
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
 	params := "?status=active&exchange=NASDAQ"
+	pageToken := "" // Start with an empty token for the first page
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params, nil)
 
@@ -51,8 +69,49 @@ func main () {
 	if err != nil {
 		panic(err)
 	}
+	var itemList []string 
+	for _, item := range items {
+		itemList = append(itemList, item.Symbol)
+	}
 
-	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
+	var first, second SymbolChange
+	first.Change = math.MaxFloat64
+
+	for {
+		// Fetch data with current page token
+		resp, err := getData(pageToken, alpacaKey, alpacaSecret, strings.Join(itemList, ","))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Iterate over all the stock symbols in the bars map
+		for symbol, bars := range resp.Bars {
+			fmt.Printf("Data for %s:\n", symbol)
+			for _, bar := range bars {
+				fmt.Printf("Time: %s, Open: %.2f, High: %.2f, Low: %.2f, Close: %.2f, Volume: %d\n",
+					bar.T, bar.O, bar.H, bar.L, bar.C, bar.V)
+
+				symbolChange := SymbolChange{Symbol: symbol, Change: ((bar.C - bar.O) / bar.O ) * 100 }
+
+				if symbolChange.Change < first.Change {
+					// Update first and second smallest values
+					second = first
+					first = symbolChange
+				} else if symbolChange.Change < second.Change {
+					// Update only the second smallest value
+					second = symbolChange
+				}
+			}
+		}
+
+		// Check if there is a next page
+		if resp.NextPageToken == "" {
+			break // No more pages
+		}
+
+		// Set the next page token for the next iteration
+		pageToken = resp.NextPageToken
+	}
 
 	fmt.Printf("Biggest Losers: \n%s:%F, %s:%F\n\n", first.Symbol, first.Change, second.Symbol ,second.Change)
 
@@ -84,72 +143,6 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	return data
 }
 
-
-func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
-	var first, second SymbolChange
-	first.Change = math.MaxFloat64
-
-	for _, asset := range assets {
-		if asset.Symbol == "BAND" {
-			continue
-		}
-
-		percentChange := getPercentChange(asset.Symbol, alpacaKey, alpacaSecret)
-
-		if percentChange == 0 {
-			continue
-		}
-
-		data := SymbolChange{
-			Symbol: asset.Symbol,
-			Change: percentChange,
-		}
-
-		if data.Change < first.Change {
-			// Update first and second smallest values
-			second = first
-			first = data
-		} else if data.Change < second.Change {
-			// Update only the second smallest value
-			second = data
-		}
-	}
-	return first, second
-}
-
-func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) float64 {
-	//First check if the company is catastriphic
-	if catastrophe(symbol, alpacaKey, alpacaSecret) {
-		return 0
-	}
-
-	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
-	params := "?timeframe=1D&feed=iex"
-
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
-	
-	var data map[string]interface{}
-	err := json.Unmarshal(res, &data)
-
-	if err != nil {
-	  panic(err)
-	}
-
-	if data["bars"] == nil {
-		return 0
-	}
-
-	bar := data["bars"].([]interface{})[0].(map[string]interface{})
-	open := bar["o"].(float64)
-	close := bar["c"].(float64)
-
-	if close < 5 {
-		return 0
-	}
-	
-	return ((close - open) / open ) * 100
-}
-
 func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool, buyingPower float32) {
 	var apiDomain string
 	if !dryRun {
@@ -168,32 +161,6 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool,
 	orderStatus := alpacaRequest("POST", alpacaKey, alpacaSecret, url, "", payload)
 
 	fmt.Printf("\n\n\nOrder Info: \n%s", string(orderStatus))
-}
-
-func catastrophe(symbol string, alpacaKey string, alpacaSecret string) bool{
-	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
-	params := "?timeframe=3M&feed=iex"
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
-	
-	var data map[string]interface{}
-	err := json.Unmarshal(res, &data)
-
-	if err != nil {
-	  panic(err)
-	}
-
-	fmt.Print(data)
-
-	if data["bars"] == nil {
-		return true
-	}
-
-	bar := data["bars"].([]interface{})[0].(map[string]interface{})
-	open := bar["o"].(float64)
-	close := bar["c"].(float64)
-
-	// If the company has lost 50% of its value in the last 3 months it is catastrophic
-	return (((close - open) / open ) * 100) < -50
 }
 
 func findBuyingPower(alpacaKey string, alpacaSecret string, isDryRun bool) float64 {
@@ -221,4 +188,48 @@ func findBuyingPower(alpacaKey string, alpacaSecret string, isDryRun bool) float
 	totalBuyingPower, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
 
 	return math.Floor( (totalBuyingPower/2) * 100 ) / 100 
+}
+
+func getData(pageToken string, alpacaKey string, alpacaSecret string, symbols string) (*Response, error) {
+	url := "https://data.alpaca.markets/v2/stocks/bars"
+	params := fmt.Sprintf("?symbols=%s&timeframe=1D&feed=iex", symbols)
+
+	// If there's a page token, add it as a query parameter
+	if pageToken != "" {
+		params = fmt.Sprintf("%spage_token=%s", params, pageToken)
+	}
+
+	// Prepare the request with the correct headers
+	req, err := http.NewRequest("GET", url + params, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add the necessary headers
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("APCA-API-KEY-ID", alpacaKey)
+	req.Header.Add("APCA-API-SECRET-KEY", alpacaSecret)
+
+
+	// Make the HTTP request
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the JSON response into the Response struct
+	var resp Response
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
 }

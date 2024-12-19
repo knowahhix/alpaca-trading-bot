@@ -31,15 +31,15 @@ jobs:
                 terraform_version: "1.9.8"
 
             - name: Terraform init Production
-              working-directory: ./knowah-production
+              working-directory: ./infrastructure
               run: terraform init
 
             - name: Terraform Plan Production
               if: ${{ github.event_name == 'pull_request' }}
-              working-directory: ./knowah-production
+              working-directory: ./infrastructure
               run: terraform plan
 
             - name: Terraform Apply Production
-              if: ${{ github.event_name == 'push' }}
-              working-directory: ./knowah-production
+              # if: ${{ github.event_name == 'push' }}
+              working-directory: ./infrastructure
               run: terraform apply -auto-approve

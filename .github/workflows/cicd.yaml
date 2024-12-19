@@ -31,7 +31,7 @@ jobs:
 
             - name: Terraform init Production
               working-directory: ./infrastructure
-              run: terraform init
+              run: terraform init -upgrade
 
             - name: Terraform Plan Production
               if: ${{ github.event_name == 'pull_request' }}

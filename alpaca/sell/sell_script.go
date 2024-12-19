@@ -5,12 +5,23 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func main() {
+	dryRun, _ := os.LookupEnv("DRY_RUN")
+	isDryRun, _ := strconv.ParseBool(dryRun)
+
+	var apiDomain string
+	if !isDryRun {
+		apiDomain = "api"
+	} else {
+		apiDomain = "paper-api"
+	}
+
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
-	url := "https://api.alpaca.markets/v2/positions"
+	url := fmt.Sprintf("https://%s.alpaca.markets/v2/positions", apiDomain)
 
 	req, _ := http.NewRequest("DELETE", url, nil)
 

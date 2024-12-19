@@ -11,6 +11,8 @@ env:
   ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
   ALPACA_USERNAME: ${{ secrets.ALPACA_USERNAME }}
   ALPACA_PASSWORD: ${{ secrets.ALPACA_PASSWORD }}
+  DRY_RUN: "${{ github.event_name == 'schedule' && 'false' || 'true' }}"
+  
 
 jobs:
   run-buy-script: 

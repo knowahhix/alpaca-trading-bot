@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	// "github.com/alpacahq/alpaca-trade-api-go/alpaca"
 )
@@ -33,6 +34,10 @@ type Item struct {
 }
 
 func main () {
+
+	dryRun, _ := os.LookupEnv("DRY_RUN")
+	isDryRun, _ := strconv.ParseBool(dryRun)
+
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
@@ -51,8 +56,8 @@ func main () {
 
 	fmt.Printf("%s:%F, %s:%F", first.Symbol, first.Change, second.Symbol ,second.Change)
 
-	buyOrder(first.Symbol, alpacaKey, alpacaSecret)
-	buyOrder(second.Symbol, alpacaKey, alpacaSecret)
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun)
+	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun)
 	 
 }
 
@@ -138,8 +143,15 @@ func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) floa
 	return ((close - open) / open ) * 100
 }
 
-func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
-	accountURL := "https://api.alpaca.markets/v2/account"
+func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool) {
+	var apiDomain string
+	if !dryRun {
+		apiDomain = "api"
+	} else {
+		apiDomain = "paper-api"
+	}
+	
+	accountURL := fmt.Sprintf("https://%s.alpaca.markets/v2/account", apiDomain)
 	params := ""
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, accountURL, params, nil)
@@ -153,7 +165,7 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
 
 	buying_power := account["buying_power"].(float32)
 
-	url := "https://api.alpaca.markets/v2/orders"
+	url := fmt.Sprintf("https://%s.alpaca.markets/v2/orders", apiDomain)
 	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))
 
 	alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)

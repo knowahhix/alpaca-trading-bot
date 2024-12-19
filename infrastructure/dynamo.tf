@@ -20,6 +20,13 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
     type = "S"
   }
 
+  local_secondary_index {
+    name               = "local"
+    non_key_attributes = ["OpenPrice"]
+    projection_type    = "KEYS_ONLY"
+    range_key          = "LastUpdated"
+  }
+
   tags = {
     terraform = "true"
   }

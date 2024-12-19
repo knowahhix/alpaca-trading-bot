@@ -4,6 +4,7 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
   read_capacity  = 25
   write_capacity = 25
   hash_key       = "Symbol"
+  range_key      = "OpenPrice"
 
   attribute {
     name = "Symbol"

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"net/http"
 	"os"
@@ -71,6 +70,9 @@ func main () {
 	}
 	var itemList []string 
 	for _, item := range items {
+		if strings.Contains(item.Symbol, "/"){
+			continue
+		}
 		itemList = append(itemList, item.Symbol)
 	}
 
@@ -82,15 +84,12 @@ func main () {
 		resp, err := getData(pageToken, alpacaKey, alpacaSecret, strings.Join(itemList, ","))
 	
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		// Iterate over all the stock symbols in the bars map
 		for symbol, bars := range resp.Bars {
-			fmt.Printf("Data for %s:\n", symbol)
 			for _, bar := range bars {
-				fmt.Printf("Time: %s, Open: %.2f, High: %.2f, Low: %.2f, Close: %.2f, Volume: %d\n",
-					bar.T, bar.O, bar.H, bar.L, bar.C, bar.V)
 
 				symbolChange := SymbolChange{Symbol: symbol, Change: ((bar.C - bar.O) / bar.O ) * 100 }
 
@@ -197,7 +196,7 @@ func getData(pageToken string, alpacaKey string, alpacaSecret string, symbols st
 
 	// If there's a page token, add it as a query parameter
 	if pageToken != "" {
-		params = fmt.Sprintf("%spage_token=%s", params, pageToken)
+		params = fmt.Sprintf("%s&page_token=%s", params, pageToken)
 	}
 
 	// Prepare the request with the correct headers
@@ -218,17 +217,7 @@ func getData(pageToken string, alpacaKey string, alpacaSecret string, symbols st
 		return nil, err
 	}
 	defer res.Body.Close()
-
-	// Read the response body
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Print("\n")
-	fmt.Print(body)
-	fmt.Print("\n\n")
-	
+	body, _ := io.ReadAll(res.Body)
 
 	// Parse the JSON response into the Response struct
 	var resp Response

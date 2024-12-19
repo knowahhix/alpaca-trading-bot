@@ -79,61 +79,59 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 
 
 func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
-	losers := make([]SymbolChange, 0, len(assets))
+	var first, second SymbolChange
+	first.Change = math.MaxFloat64
+
 	for _, asset := range assets {
-		current := getCurrentPrice(asset.Symbol, alpacaKey, alpacaSecret)
-		open := getStartPrice(asset.Symbol, alpacaKey, alpacaSecret)
-		if (open == 0  || current == 0 || current < 15) || (asset.Symbol == "BAND"){
+		if asset.Symbol == "BAND" {
 			continue
 		}
-		percentChange := ((current - open) / open ) * 100
+
+		percentChange := getPercentChange(asset.Symbol, alpacaKey, alpacaSecret)
+
+		if percentChange == 0 {
+			continue
+		}
+
 		data := SymbolChange{
 			Symbol: asset.Symbol,
 			Change: percentChange,
 		}
-		losers = append(losers, data)
-	}
-	
-	var first, second SymbolChange
-	first.Change = math.MaxFloat64
 
-	for _, sc := range losers {
-		if sc.Change < first.Change {
+		if data.Change < first.Change {
 			// Update first and second smallest values
 			second = first
-			first = sc
-		} else if sc.Change < second.Change {
+			first = data
+		} else if data.Change < second.Change {
 			// Update only the second smallest value
-			second = sc
+			second = data
 		}
 	}
-
 	return first, second
-
 }
 
-func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
-	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
-	params := "?feed=iex"
-	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
+// func getCurrentPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
+// 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/quotes/latest", symbol)
+// 	params := "?feed=iex"
+// 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, url, params, nil)
 
-	var data map[string]interface{}
-	err := json.Unmarshal(res, &data)
+// 	var data map[string]interface{}
+// 	err := json.Unmarshal(res, &data)
 
-	if err != nil {
-	  panic(err)
-	}
+// 	if err != nil {
+// 	  panic(err)
+// 	}
 
-	if data["quote"] == nil {
-		return 0
-	}
+// 	if data["quote"] == nil {
+// 		return 0
+// 	}
 
-	quote := data["quote"].(map[string]interface{})["ap"].(float64)
+// 	quote := data["quote"].(map[string]interface{})["ap"].(float64)
 
-	return quote
-}
+// 	return quote
+// }
 
-func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64 {
+func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) float64 {
 	url := fmt.Sprintf("https://data.alpaca.markets/v2/stocks/%s/bars", symbol)
 	params := "?timeframe=1D&feed=iex"
 
@@ -150,9 +148,10 @@ func getStartPrice(symbol string, alpacaKey string, alpacaSecret string) float64
 		return 0
 	}
 
-	bar := data["bars"].([]interface{})[0].(map[string]interface{})["o"].(float64)
+	open := data["bars"].([]interface{})[0].(map[string]interface{})["o"].(float64)
+	close := data["bars"].([]interface{})[0].(map[string]interface{})["c"].(float64)
 	
-	return bar
+	return ((close - open) / open ) * 100
 }
 
 func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {

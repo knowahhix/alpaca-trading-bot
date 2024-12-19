@@ -132,7 +132,7 @@ func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (Sy
 		if (open == 0  || current == 0 || current < 15) || (asset.Symbol == "BAND"){
 			continue
 		}
-		percentChange := (current / open) * 100
+		percentChange := ((current - open) / open ) * 100
 		data := SymbolChange{
 			Symbol: asset.Symbol,
 			Change: percentChange,

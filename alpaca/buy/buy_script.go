@@ -90,7 +90,7 @@ func main () {
 		// Iterate over all the stock symbols in the bars map
 		for symbol, bars := range resp.Bars {
 			for _, bar := range bars {
-
+				if bar.O < 10 { continue } // No Penny stocks
 				symbolChange := SymbolChange{Symbol: symbol, Change: ((bar.C - bar.O) / bar.O ) * 100 }
 
 				if symbolChange.Change < first.Change {
@@ -120,7 +120,7 @@ func main () {
 	fmt.Printf("\nBuying Power: %f", buyingPower)
 
 	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
-	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
+	buyOrder(second.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower - .01)
 	 
 }
 

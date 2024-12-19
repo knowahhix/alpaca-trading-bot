@@ -49,7 +49,7 @@ func main () {
 
 	first, second := findBiggestLosers(items, alpacaKey, alpacaSecret)
 
-	fmt.Printf("%s:%F, %s:%F", first.Symbol, first.Change, first.Symbol ,second.Change)
+	fmt.Printf("%s:%F, %s:%F", first.Symbol, first.Change, second.Symbol ,second.Change)
 
 	buyOrder(first.Symbol, alpacaKey, alpacaSecret)
 	buyOrder(second.Symbol, alpacaKey, alpacaSecret)
@@ -77,52 +77,6 @@ func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url str
 	return data
 }
 
-// func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
-// 	losers := []SymbolChange{}
-// 	ch := make(chan SymbolChange)
-
-// 	var wg sync.WaitGroup
-// 	for _, asset := range assets {
-// 		wg.Add(2) // Each asset requires two API calls
-
-// 		// Fetch current price in a goroutine
-// 		go func(symbol string) {
-// 			defer wg.Done()
-// 			current := getCurrentPrice(symbol, alpacaKey, alpacaSecret)
-// 			open := getStartPrice(symbol, alpacaKey, alpacaSecret)
-// 			if (open == 0 || current == 0 || current < 15) || (symbol == "BAND") {
-// 				return
-// 			}
-// 			percentChange := ((current - open) / open )* 100
-// 			ch <- SymbolChange{Symbol: symbol, Change: percentChange}
-// 		}(asset.Symbol)
-// 	}
-
-// 	// Wait for all API calls to complete
-// 	go func() {
-// 		wg.Wait()
-// 		close(ch)
-// 	}()
-
-// 	for sc := range ch {
-// 		losers = append(losers, sc)
-// 	}
-
-// 	var first, second SymbolChange
-// 	first.Change = math.MaxFloat64
-
-// 	// Process the results for the biggest losers
-// 	for _, sc := range losers {
-// 		if sc.Change < first.Change {
-// 			second = first
-// 			first = sc
-// 		} else if sc.Change < second.Change {
-// 			second = sc
-// 		}
-// 	}
-
-// 	return first, second
-// }
 
 func findBiggestLosers(assets []Item, alpacaKey string, alpacaSecret string) (SymbolChange, SymbolChange){
 	losers := make([]SymbolChange, 0, len(assets))

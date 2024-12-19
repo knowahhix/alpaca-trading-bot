@@ -80,8 +80,7 @@ func main () {
 	for {
 		// Fetch data with current page token
 		resp, err := getData(pageToken, alpacaKey, alpacaSecret, strings.Join(itemList, ","))
-		fmt.Print("\n\n")
-		fmt.Print(resp)
+	
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -225,6 +224,11 @@ func getData(pageToken string, alpacaKey string, alpacaSecret string, symbols st
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Print("\n")
+	fmt.Print(body)
+	fmt.Print("\n\n")
+	
 
 	// Parse the JSON response into the Response struct
 	var resp Response

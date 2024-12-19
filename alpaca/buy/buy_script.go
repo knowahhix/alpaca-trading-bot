@@ -139,7 +139,7 @@ func getPercentChange(symbol string, alpacaKey string, alpacaSecret string) floa
 }
 
 func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
-	accountURL := "https://paper-api.alpaca.markets/v2/account"
+	accountURL := "https://api.alpaca.markets/v2/account"
 	params := ""
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, accountURL, params, nil)
@@ -153,7 +153,7 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string) {
 
 	buying_power := account["buying_power"].(float32)
 
-	url := "https://paper-api.alpaca.markets/v2/orders"
+	url := "https://api.alpaca.markets/v2/orders"
 	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))
 
 	alpacaRequest("POST", alpacaKey, alpacaSecret, url, params, payload)

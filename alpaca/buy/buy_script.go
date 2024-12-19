@@ -169,7 +169,7 @@ func buyOrder(symbol string, alpacaKey string, alpacaSecret string, dryRun bool)
 
 	fmt.Print(account)
 
-	buying_power := account["buying_power"].(float32)
+	buying_power, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
 
 	url := fmt.Sprintf("https://%s.alpaca.markets/v2/orders", apiDomain)
 	payload := strings.NewReader(fmt.Sprintf("{\"symbol\":\"%s\",\"notional\":\"%f\",\"side\":\"buy\",\"type\":\"market\",\"time_in_force\":\"day\"}", symbol, buying_power/2))

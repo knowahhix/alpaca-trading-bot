@@ -69,7 +69,8 @@ func main () {
 	}
 	var itemList []string 
 	for _, item := range items {
-		if strings.Contains(item.Symbol, "/") || !item.Fractionable {
+		if strings.Contains(item.Symbol, "/") || !item.Fractionable  || strings.Contains(strings.ToLower(item.Name), "short") || item.Symbol == "BAND" {
+			// I don't want invalid symbols, non fractionable stocks, shorts, or Bandwidth
 			continue
 		}
 		itemList = append(itemList, item.Symbol)

@@ -119,7 +119,7 @@ func main () {
 
 	fmt.Printf("\nBuying Power: %f", buyingPower)
 
-	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower - .01)
 	 
 }
 

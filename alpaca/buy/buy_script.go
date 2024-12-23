@@ -119,7 +119,7 @@ func main () {
 
 	fmt.Printf("\nBuying Power: %f", buyingPower)
 
-	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower - .02)
+	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower)
 }
 
 func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string, body any) []byte {
@@ -185,7 +185,7 @@ func findBuyingPower(alpacaKey string, alpacaSecret string, isDryRun bool) float
 		panic(e)
 	}
 
-	totalBuyingPower, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
+	totalBuyingPower, _ := strconv.ParseFloat(account["cash"].(string), 32)
 
 	return math.Floor( (totalBuyingPower) * 100 ) / 100 
 }

@@ -185,7 +185,7 @@ func findBuyingPower(alpacaKey string, alpacaSecret string, isDryRun bool) float
 		panic(e)
 	}
 
-	totalBuyingPower, _ := strconv.ParseFloat(account["buying_power"].(string), 64)
+	totalBuyingPower, _ := strconv.ParseFloat(account["buying_power"].(string), 32)
 
 	return math.Floor( (totalBuyingPower) * 100 ) / 100 
 }

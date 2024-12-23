@@ -120,7 +120,6 @@ func main () {
 	fmt.Printf("\nBuying Power: %f", buyingPower)
 
 	buyOrder(first.Symbol, alpacaKey, alpacaSecret, isDryRun, buyingPower - .01)
-	 
 }
 
 func alpacaRequest(method string, alpacaKey string, alpacaSecret string, url string, params string, body any) []byte {

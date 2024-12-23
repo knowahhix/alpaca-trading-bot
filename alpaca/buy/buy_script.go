@@ -227,7 +227,3 @@ func getData(pageToken string, alpacaKey string, alpacaSecret string, symbols st
 
 	return &resp, nil
 }
-
-func checkForCatastrophe() {
-
-}

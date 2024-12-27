@@ -3,7 +3,7 @@ name: Close Positions
 
 on:
   schedule:
-    - cron: '5 15 * * 1-5'
+    - cron: '10 15 * * 1-5'
   pull_request:
 
 env:

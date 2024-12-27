@@ -56,7 +56,7 @@ func main () {
 	alpacaKey, _ := os.LookupEnv("ALPACA_KEY")
 	alpacaSecret, _ := os.LookupEnv("ALPACA_SECRET")
 	assetsUrl := "https://api.alpaca.markets/v2/assets"
-	params := "?status=active&exchange=NASDAQ"
+	params := "?status=active&exchange=NYSE"
 	pageToken := "" // Start with an empty token for the first page
 
 	res := alpacaRequest("GET", alpacaKey, alpacaSecret, assetsUrl, params, nil)

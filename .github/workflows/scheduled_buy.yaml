@@ -3,7 +3,7 @@ name: Scheduled Buy
 
 on:
   schedule:
-    - cron: '45 20 * * 1-5'
+    - cron: '50 20 * * 1-5'
   pull_request:
 
 env:
